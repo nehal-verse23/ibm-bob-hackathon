@@ -10,7 +10,9 @@ def find_python_files(project_path):
     for root, folders, files in os.walk(project_path):
         for file in files:
             if file.endswith(".py"):
-                python_files.append(os.path.join(root, file))
+                python_files.append(
+                    os.path.join(root, file)
+                )
 
     return python_files
 
@@ -26,12 +28,18 @@ def find_dependencies(file_path):
     for node in ast.walk(tree):
 
         if isinstance(node, ast.Import):
+
             for name in node.names:
-                dependencies.append(name.name.split(".")[0])
+                dependencies.append(
+                    name.name.split(".")[-1]
+                )
 
         elif isinstance(node, ast.ImportFrom):
+
             if node.module:
-                dependencies.append(node.module.split(".")[0])
+                dependencies.append(
+                    node.module.split(".")[-1]
+                )
 
     return dependencies
 
@@ -40,44 +48,73 @@ def build_dependency_map(files):
     dependency_map = {}
 
     for file in files:
+
         filename = os.path.splitext(
             os.path.basename(file)
         )[0]
 
-        dependency_map[filename] = find_dependencies(file)
+        dependency_map[filename] = find_dependencies(
+            file
+        )
 
     return dependency_map
 
 
-def find_affected_files(dependency_map, changed_file):
+def find_affected_files(
+    dependency_map,
+    changed_file
+):
+
     affected_files = []
 
     for file, dependencies in dependency_map.items():
 
-        if changed_file in dependencies:
+        if (
+            changed_file in dependencies
+            and file != changed_file
+        ):
             affected_files.append(file)
 
     return affected_files
 
 
 def calculate_risk(file):
+
     if file == "orders":
         return "HIGH"
 
-    return "MEDIUM"
+    if file == "notifications":
+        return "MEDIUM"
+
+    return "LOW"
 
 
-def recommend_tests(changed_file, affected_files):
+def recommend_tests(
+    changed_file,
+    affected_files
+):
 
     tests = []
 
     if changed_file == "payments":
-        tests.append("Successful payment")
-        tests.append("Invalid payment amount")
-        tests.append("Order payment flow")
+
+        tests.append(
+            "Successful payment"
+        )
+
+        tests.append(
+            "Invalid payment amount"
+        )
+
+        tests.append(
+            "Order payment flow"
+        )
 
     if "orders" in affected_files:
-        tests.append("Order placement")
+
+        tests.append(
+            "Order placement"
+        )
 
     return tests
 
@@ -98,7 +135,9 @@ def get_changed_files():
 
             file_path = line[3:].strip()
 
-            changed_files.append(file_path)
+            changed_files.append(
+                file_path
+            )
 
     return changed_files
 
@@ -111,20 +150,38 @@ def generate_report(
 
     report = []
 
-    report.append("=" * 60)
-    report.append("                 DEVPULSE")
-    report.append("          CHANGE IMPACT REPORT")
-    report.append("=" * 60)
+    report.append(
+        "=" * 60
+    )
+
+    report.append(
+        "                 DEVPULSE"
+    )
+
+    report.append(
+        "          CHANGE IMPACT REPORT"
+    )
+
+    report.append(
+        "=" * 60
+    )
 
     report.append(
         f"\nGenerated: "
         f"{datetime.now().strftime('%Y-%m-%d %H:%M')}"
     )
 
-    report.append("\nChanged Component:")
-    report.append(f"  → {changed_file}.py")
+    report.append(
+        "\nChanged Component:"
+    )
 
-    report.append("\nPotential Impact:")
+    report.append(
+        f"  → {changed_file}.py"
+    )
+
+    report.append(
+        "\nPotential Impact:"
+    )
 
     if affected_files:
 
@@ -173,16 +230,25 @@ def generate_report(
 
 project_path = "../sample_project"
 
-files = find_python_files(project_path)
+files = find_python_files(
+    project_path
+)
 
-dependency_map = build_dependency_map(files)
+dependency_map = build_dependency_map(
+    files
+)
 
 changed_files = get_changed_files()
 
-print("\nChanged files detected by Git:")
+print(
+    "\nChanged files detected by Git:"
+)
 
 for file in changed_files:
-    print(f"  → {file}")
+
+    print(
+        f"  → {file}"
+    )
 
 
 if not changed_files:
@@ -197,7 +263,9 @@ if not changed_files:
 changed_file_path = changed_files[0]
 
 changed_file = os.path.splitext(
-    os.path.basename(changed_file_path)
+    os.path.basename(
+        changed_file_path
+    )
 )[0]
 
 
@@ -221,4 +289,5 @@ report = generate_report(
 
 
 print("\n")
+
 print(report)

@@ -11,3 +11,4 @@ class Payment:
 
         self.db.save_payment(user_id, amount)
         return "Payment successful"
+    # Payment processing updated
